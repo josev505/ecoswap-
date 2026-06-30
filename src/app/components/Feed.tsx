@@ -80,7 +80,18 @@ export default function Feed() {
   const [showRatingDropdown, setShowRatingDropdown] = useState(false);
 
   // ADD 3 — Favorites state
-  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [favorites, setFavorites] = useState<Set<number>>(() => {
+  try {
+    const saved = localStorage.getItem('ecoswap_favorites');
+    return saved ? new Set<number>(JSON.parse(saved)) : new Set<number>();
+  } catch { return new Set<number>(); }
+});
+
+  useEffect(() => {
+    if (topBarContentRef.current) {
+      setTopBarHeight(topBarContentRef.current.scrollHeight);
+    }
+  }, []);
 
   // Search bar + filtros: se ocultan al bajar, reaparecen al subir.
   // Implementación propia, simple: solo dependemos de la dirección del
@@ -95,6 +106,9 @@ export default function Feed() {
   const cityBtnRef = useRef<HTMLButtonElement>(null);
   const conditionBtnRef = useRef<HTMLButtonElement>(null);
   const ratingBtnRef = useRef<HTMLButtonElement>(null);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+  const conditionDropdownRef = useRef<HTMLDivElement>(null);
+  const ratingDropdownRef = useRef<HTMLDivElement>(null);
   const [cityDropdownPos, setCityDropdownPos] = useState({ top: 0, left: 0 });
   const [conditionDropdownPos, setConditionDropdownPos] = useState({ top: 0, left: 0 });
   const [ratingDropdownPos, setRatingDropdownPos] = useState({ top: 0, left: 0 });
@@ -129,21 +143,24 @@ export default function Feed() {
 
   // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        !cityBtnRef.current?.contains(target) &&
-        !conditionBtnRef.current?.contains(target) &&
-        !ratingBtnRef.current?.contains(target)
-      ) {
-        setShowCityDropdown(false);
-        setShowConditionDropdown(false);
-        setShowRatingDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  const handler = (e: MouseEvent) => {
+    const target = e.target as Node;
+    if (
+      !cityBtnRef.current?.contains(target) &&
+      !conditionBtnRef.current?.contains(target) &&
+      !ratingBtnRef.current?.contains(target) &&
+      !cityDropdownRef.current?.contains(target) &&
+      !conditionDropdownRef.current?.contains(target) &&
+      !ratingDropdownRef.current?.contains(target)
+    ) {
+      setShowCityDropdown(false);
+      setShowConditionDropdown(false);
+      setShowRatingDropdown(false);
+    }
+  };
+  document.addEventListener('mousedown', handler);
+  return () => document.removeEventListener('mousedown', handler);
+}, []);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -190,8 +207,10 @@ export default function Feed() {
       const next = new Set(prev);
       if (next.has(productId)) next.delete(productId);
       else next.add(productId);
+      localStorage.setItem('ecoswap_favorites', JSON.stringify([...next]));
       return next;
     });
+    
   };
 
   const getMinRating = (option: string) => {
@@ -258,12 +277,14 @@ export default function Feed() {
         {/* Barra de búsqueda + filtros: se ocultan al bajar, reaparecen al subir */}
         <div
           style={{
-            overflowAnchor: 'none',
-            overflow: 'visible',
-            maxHeight: hideTopBar ? 0 : topBarHeight ? topBarHeight : undefined,
+            maxHeight: hideTopBar ? 0 : topBarHeight || 'none',
             opacity: hideTopBar ? 0 : 1,
-            transition: 'max-height 0.22s ease-in-out, opacity 0.18s ease-out',
+            overflow: 'hidden',
+            transition: topBarHeight > 0
+              ? 'max-height 0.25s ease-in-out, opacity 0.25s ease-in-out'
+              : 'none',
             pointerEvents: hideTopBar ? 'none' : 'auto',
+            willChange: 'max-height, opacity',
           }}
         >
           <div ref={topBarContentRef}>
@@ -300,6 +321,7 @@ export default function Feed() {
             </button>
             {showCityDropdown && (
               <div
+                ref={cityDropdownRef}
                 className="fixed bg-white border border-slate-200 rounded-xl shadow-lg py-2 min-w-[150px]"
                 style={{ top: cityDropdownPos.top, left: cityDropdownPos.left, zIndex: 9999 }}
               >
@@ -338,6 +360,7 @@ export default function Feed() {
             </button>
             {showConditionDropdown && (
               <div
+                ref={conditionDropdownRef}
                 className="fixed bg-white border border-slate-200 rounded-xl shadow-lg py-2 min-w-[150px]"
                 style={{ top: conditionDropdownPos.top, left: conditionDropdownPos.left, zIndex: 9999 }}
               >
@@ -370,6 +393,7 @@ export default function Feed() {
             </button>
             {showRatingDropdown && (
               <div
+                ref={ratingDropdownRef}
                 className="fixed bg-white border border-slate-200 rounded-xl shadow-lg py-2 min-w-[160px]"
                 style={{ top: ratingDropdownPos.top, left: ratingDropdownPos.left, zIndex: 9999 }}
               >
@@ -555,6 +579,13 @@ export default function Feed() {
             >
               <Star className="w-6 h-6" />
               <span className="text-xs">{t('Perfil')}</span>
+            </button>
+            <button
+              onClick={() => navigate('/favorites')}
+              className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#16A085] transition-colors"
+            >
+              <Heart className="w-5 h-5" />
+              <span className="text-[10px]">Favoritos</span>
             </button>
           </div>
         </div>

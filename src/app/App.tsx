@@ -17,6 +17,7 @@ import Communities from './components/Communities';
 import CommunityDetail from './components/CommunityDetail';
 import EditProfile from './components/EditProfile';
 import VerifyEmail from './components/VerifyEmail';
+import Favorites from './components/Favorites';
 import { SettingsProvider } from './contexts/SettingsContext';
 
 // AuthContext inline
@@ -147,6 +148,7 @@ export default function App() {
             <Route path="/community/:id" element={<CommunityDetail />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/favorites" element={<Favorites />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
