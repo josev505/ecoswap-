@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { motion } from 'motion/react';
-import Welcome from './components/Welcome';
+import Landing from './components/Landing';
 import Login from './components/Login';
 import Register from './components/Register';
 import Feed from './components/Feed';
@@ -133,7 +133,7 @@ export default function App() {
         <BrowserRouter>
           <FloatingGearButton />
           <Routes>
-            <Route path="/" element={<Welcome />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/feed" element={<Feed />} />
