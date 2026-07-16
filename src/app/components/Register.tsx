@@ -1,9 +1,9 @@
-import { useState, Fragment } from 'react';
+import { useState, useRef, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Camera, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../App';
 import { useSettings } from '../contexts/SettingsContext';
-import logo from '../../imports/logo.png';
+import logo from '../../../imports/logo.png';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -24,6 +24,33 @@ export default function Register() {
     dni: ''
   });
   const [showToast, setShowToast] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+
+const openCamera = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    if (videoRef.current) videoRef.current.srcObject = stream;
+    setCameraOn(true);
+  } catch {
+    alert('No se pudo acceder a la cámara');
+  }
+};
+
+const capturePhoto = () => {
+  if (!videoRef.current || !canvasRef.current) return;
+  const video = videoRef.current;
+  const canvas = canvasRef.current;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d')?.drawImage(video, 0, 0);
+  setCapturedPhoto(canvas.toDataURL('image/png'));
+  const stream = video.srcObject as MediaStream;
+  stream?.getTracks().forEach(t => t.stop());
+  setCameraOn(false);
+};
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -196,43 +223,47 @@ export default function Register() {
 
           {step === 2 && (
             <div className="text-center space-y-6">
-              <h2 className="text-2xl font-bold text-[#0F3460] mb-6">
-                Verificación Facial
-              </h2>
+              <h2 className="text-2xl font-bold text-[#0F3460] mb-6">Verificación Facial</h2>
 
-              <div className="bg-slate-100 rounded-2xl p-12 border-2 border-dashed border-slate-300 flex flex-col items-center justify-center min-h-[300px]">
-                <div className="relative mb-4">
-                  <Camera className="w-16 h-16 text-[#0F3460]" />
-                  {/* Checkmark animado */}
-                  <div className="absolute -top-2 -right-2 animate-bounce">
-                    <div className="bg-[#16A085] rounded-full p-1">
-                      <CheckCircle2 className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                </div>
-                <p className="text-slate-600 mb-4">
-                  Toma una selfie para verificar tu identidad
-                </p>
-                <Button variant="outline" className="text-[#16A085] border-[#16A085] hover:bg-[#16A085] hover:text-white px-6 py-6 rounded-lg flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Abrir Cámara
-                </Button>
-              </div>
-
-              <Button
-                onClick={handleSubmit}
-                className="w-full bg-[#16A085] hover:bg-[#138D75] text-white py-6 rounded-lg font-semibold flex items-center justify-center gap-2"
-              >
-                Continuar
-                <ChevronRight className="w-5 h-5" />
-              </Button>
+              <div className="bg-slate-100 rounded-2xl p-6 border-2 border-dashed border-slate-300 flex flex-col items-center justify-center min-h-[300px]">
+                {!capturedPhoto ? (
+                  <>
+                    <video ref={videoRef} autoPlay playsInline className={`rounded-xl mb-4 ${cameraOn ? 'block' : 'hidden'} w-full max-w-xs`} />
+                    {!cameraOn && (
+                      <>
+                        <Camera className="w-16 h-16 text-[#0F3460] mb-4" />
+                        <p className="text-slate-600 mb-4">Toma una selfie para verificar tu identidad</p>
+                      </>
+                    )}
+                    <Button type="button" variant="outline" onClick={cameraOn ? capturePhoto : openCamera}
+                      className="text-[#16A085] border-[#16A085] hover:bg-[#16A085] hover:text-white px-6 py-6 rounded-lg flex items-center gap-2">
+                      <Camera className="w-5 h-5" />
+                      {cameraOn ? 'Tomar Foto' : 'Abrir Cámara'}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <img src={capturedPhoto} alt="selfie" className="rounded-xl mb-4 w-full max-w-xs" />
+                    <p className="text-[#16A085] font-semibold flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5" /> Foto capturada
+                    </p>
+                  </>
+              )}
+              <canvas ref={canvasRef} className="hidden" />
             </div>
-          )}
+
+            <Button onClick={handleSubmit} disabled={!capturedPhoto}
+              className="w-full bg-[#16A085] hover:bg-[#138D75] text-white py-6 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50">
+              Continuar
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+          </div>
+      )}
 
           {step === 3 && (
             <div className="text-center space-y-6">
-              <div className="bg-[#16A085] bg-opacity-10 rounded-full w-24 h-24 mx-auto flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-12 h-12 text-[#16A085]" />
+              <div className="bg-[#16A085] rounded-full w-24 h-24 mx-auto flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-14 h-14 text-white" strokeWidth={2.5} />
               </div>
 
               <h2 className="text-2xl font-bold text-[#0F3460]">
