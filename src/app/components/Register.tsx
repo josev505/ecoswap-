@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Camera, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../App';
 import { useSettings } from '../contexts/SettingsContext';
-import logo from '../../../imports/logo.png';
+import logo from '../../imports/logo.png';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
