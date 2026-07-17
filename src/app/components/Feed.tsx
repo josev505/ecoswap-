@@ -915,6 +915,93 @@ export default function Feed() {
           </div>
         </div>
       )}
+      {showPremiumModal && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowPremiumModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl max-w-md w-full p-6 relative shadow-2xl max-h-[90vh] overflow-y-auto"
+          >
+            <button
+              onClick={() => setShowPremiumModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Star className="w-7 h-7 text-white fill-white" />
+              </div>
+              <h2 className="text-xl font-bold text-[#0F3460]">
+                EcoSwap Premium
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Más visibilidad, más intercambios
+              </p>
+            </div>
+
+            <div className="border border-slate-200 rounded-xl p-4 mb-3">
+              <p className="font-semibold text-slate-700 mb-2 text-sm">
+                Plan Gratuito (actual)
+              </p>
+              <ul className="space-y-1.5 text-sm text-slate-500">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-slate-400" /> Publicaciones
+                  ilimitadas
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-slate-400" /> Chat y
+                  negociación
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-slate-400" /> Hasta 6 fotos por
+                  producto
+                </li>
+              </ul>
+            </div>
+
+            <div className="border-2 border-[#16A085] rounded-xl p-4 mb-5 bg-[#16A085]/5 relative">
+              <span className="absolute -top-3 left-4 bg-[#16A085] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                RECOMENDADO
+              </span>
+              <p className="font-semibold text-[#0F3460] mb-2 text-sm">
+                Plan Premium — S/ 14.90 / mes
+              </p>
+              <ul className="space-y-1.5 text-sm text-slate-700">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-[#16A085]" /> Tus publicaciones
+                  aparecen primero en el feed
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-[#16A085]" /> Insignia de
+                  perfil "Vendedor Premium"
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-[#16A085]" /> Estadísticas de
+                  visitas a tus productos
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-[#16A085]" /> Soporte
+                  prioritario
+                </li>
+              </ul>
+            </div>
+
+            <button
+              onClick={() => setShowPremiumModal(false)}
+              className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+            >
+              Suscribirme a Premium
+            </button>
+            <p className="text-xs text-slate-400 text-center mt-3">
+              Puedes cancelar cuando quieras
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
