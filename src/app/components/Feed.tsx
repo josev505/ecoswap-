@@ -15,6 +15,8 @@ import {
   LayoutGrid,
   Users,
   Heart,
+  X,
+  Check,
 } from "lucide-react";
 import { useAuth, UserProduct } from "../App";
 import { useSettings } from "../contexts/SettingsContext";
@@ -302,6 +304,7 @@ export default function Feed() {
 
   // ADD 2 — Rating filter state
   const [selectedRating, setSelectedRating] = useState("");
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [showRatingDropdown, setShowRatingDropdown] = useState(false);
 
   // ADD 3 — Favorites state
@@ -502,7 +505,7 @@ export default function Feed() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate("/premium")}
+              onClick={() => setShowPremiumModal(true)}
               className="px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-full font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-1"
             >
               ⭐ Mejora tu plan
