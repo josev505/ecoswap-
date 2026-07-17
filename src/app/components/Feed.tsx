@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
   Plus,
@@ -276,8 +276,10 @@ const getConditionColor = (condition: string) => {
 
 export default function Feed() {
   const navigate = useNavigate();
-  const { isLoggedIn, userName, userProducts } = useAuth();
+  const location = useLocation();
+  const { isLoggedIn, userName, userProducts, isPremium, activatePremium, currentUserEmail } = useAuth();
   const { t, language } = useSettings();
+  const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
 
   // Combinar productos del usuario con los mock (los del usuario van primero)
   const allProducts = useMemo(() => {
@@ -316,6 +318,14 @@ export default function Feed() {
       return new Set<number>();
     }
   });
+
+  // Muestra el modal de confirmación si venimos de activar Premium (login/registro)
+  useEffect(() => {
+    if ((location.state as any)?.justUpgraded) {
+      setShowUpgradeConfirm(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (topBarContentRef.current) {
@@ -990,15 +1000,66 @@ export default function Feed() {
               </ul>
             </div>
 
-            <button
-              onClick={() => setShowPremiumModal(false)}
-              className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
-            >
-              Suscribirme a Premium
-            </button>
+            {!isLoggedIn ? (
+              <button
+                onClick={() => {
+                  setShowPremiumModal(false);
+                  navigate("/login", { state: { fromUpgrade: true } });
+                }}
+                className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+              >
+                Regístrate
+              </button>
+            ) : isPremium ? (
+              <button
+                disabled
+                className="w-full bg-slate-200 text-slate-500 py-3 rounded-xl font-semibold cursor-not-allowed"
+              >
+                Ya eres Premium ✓
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  activatePremium(currentUserEmail);
+                  setShowPremiumModal(false);
+                  setShowUpgradeConfirm(true);
+                }}
+                className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+              >
+                Suscribirme a Premium
+              </button>
+            )}
             <p className="text-xs text-slate-400 text-center mt-3">
               Puedes cancelar cuando quieras
             </p>
+          </div>
+        </div>
+      )}
+      {showUpgradeConfirm && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowUpgradeConfirm(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl max-w-sm w-full p-6 relative shadow-2xl text-center"
+          >
+            <div className="w-14 h-14 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Star className="w-7 h-7 text-white fill-white" />
+            </div>
+            <h2 className="text-xl font-bold text-[#0F3460] mb-2">
+              ¡Ya eres Premium!
+            </h2>
+            <p className="text-sm text-slate-600 mb-6">
+              Tu cuenta ahora tiene la insignia "Vendedor Premium" y todos los
+              beneficios del plan. Puedes verlo en tu perfil.
+            </p>
+            <button
+              onClick={() => setShowUpgradeConfirm(false)}
+              className="w-full bg-[#16A085] hover:bg-[#138D75] text-white py-3 rounded-xl font-semibold"
+            >
+              Entendido
+            </button>
           </div>
         </div>
       )}

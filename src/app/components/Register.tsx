@@ -1,5 +1,5 @@
 import { useState, useRef, Fragment } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronRight, Camera, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../App";
 import { useSettings } from "../contexts/SettingsContext";
@@ -12,6 +12,8 @@ import { registrarMetrica } from "../../supabase";
 
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromUpgrade = !!(location.state as any)?.fromUpgrade;
   const { registerUser } = useAuth();
   const { t } = useSettings();
   const [step, setStep] = useState(1);
@@ -79,6 +81,7 @@ export default function Register() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        fromUpgrade,
       },
     });
   };

@@ -41,7 +41,7 @@ async function sendVerificationEmail(
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, registerUser } = useAuth();
+  const { login, registerUser, activatePremium } = useAuth();
   const { t } = useSettings();
 
   // Datos que vienen de Register
@@ -49,8 +49,9 @@ export default function VerifyEmail() {
     name?: string;
     email?: string;
     password?: string;
+    fromUpgrade?: boolean;
   };
-  const { name = '', email = '', password = '' } = state;
+  const { name = '', email = '', password = '', fromUpgrade = false } = state;
 
   const [code, setCode] = useState('');
   const [sentCode, setSentCode] = useState('');
@@ -146,7 +147,12 @@ export default function VerifyEmail() {
     setSuccess(true);
     setTimeout(() => {
       login(email, password);
-      navigate('/feed');
+      if (fromUpgrade) {
+        activatePremium(email);
+        navigate('/feed', { state: { justUpgraded: true } });
+      } else {
+        navigate('/feed');
+      }
     }, 2000);
   };
 

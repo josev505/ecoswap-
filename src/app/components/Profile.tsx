@@ -27,7 +27,7 @@ const recentTrades = [
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { isLoggedIn, userName } = useAuth();
+  const { isLoggedIn, userName, isPremium } = useAuth();
   const { t } = useSettings();
 
   // Redirigir si no está logueado
@@ -63,6 +63,12 @@ export default function Profile() {
                 <span className="text-white text-xs font-bold">✓</span>
                 <span className="text-white text-[10px] font-semibold">Verificado</span>
               </div>
+              {isPremium && (
+                <div className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full px-2 py-0.5">
+                  <span className="text-white text-xs font-bold">⭐</span>
+                  <span className="text-white text-[10px] font-semibold">Vendedor Premium</span>
+                </div>
+              )}
             </div>
             <p className="text-white text-opacity-90 mb-3">
               {t('Miembro desde Enero 2025')}

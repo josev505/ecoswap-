@@ -1,24 +1,24 @@
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { Settings as SettingsIcon } from 'lucide-react';
-import { motion } from 'motion/react';
-import Landing from './components/Landing';
-import Login from './components/Login';
-import Register from './components/Register';
-import Feed from './components/Feed';
-import Upload from './components/Upload';
-import ProductDetail from './components/ProductDetail';
-import Profile from './components/Profile';
-import SellerProfile from './components/SellerProfile';
-import Chat from './components/Chat';
-import Logistics from './components/Logistics';
-import SettingsScreen from './components/Settings';
-import Communities from './components/Communities';
-import CommunityDetail from './components/CommunityDetail';
-import EditProfile from './components/EditProfile';
-import VerifyEmail from './components/VerifyEmail';
-import Favorites from './components/Favorites';
-import { SettingsProvider } from './contexts/SettingsContext';
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { createContext, useContext, useState, ReactNode } from "react";
+import { Settings as SettingsIcon } from "lucide-react";
+import { motion } from "motion/react";
+import Landing from "./components/Landing";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import Feed from "./components/Feed";
+import Upload from "./components/Upload";
+import ProductDetail from "./components/ProductDetail";
+import Profile from "./components/Profile";
+import SellerProfile from "./components/SellerProfile";
+import Chat from "./components/Chat";
+import Logistics from "./components/Logistics";
+import SettingsScreen from "./components/Settings";
+import Communities from "./components/Communities";
+import CommunityDetail from "./components/CommunityDetail";
+import EditProfile from "./components/EditProfile";
+import VerifyEmail from "./components/VerifyEmail";
+import Favorites from "./components/Favorites";
+import { SettingsProvider } from "./contexts/SettingsContext";
 
 // AuthContext inline
 interface AuthContextType {
@@ -31,6 +31,8 @@ interface AuthContextType {
   addUserProduct: (p: UserProduct) => void;
   registerUser: (name: string, email: string, password: string) => void;
   currentUserEmail: string;
+  isPremium: boolean;
+  activatePremium: (email: string) => void;
 }
 
 export interface UserProduct {
@@ -39,7 +41,7 @@ export interface UserProduct {
   category: string;
   condition: string;
   description: string;
-  image: string;   // primera imagen (para Feed y cards)
+  image: string; // primera imagen (para Feed y cards)
   images: string[];
   distance: string;
   rating: number;
@@ -55,7 +57,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
@@ -65,11 +67,28 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const [userName, setUserName] = useState('');
   const [currentUserEmail, setCurrentUserEmail] = useState('');
   const [userProducts, setUserProducts] = useState<UserProduct[]>([]);
+  const [isPremium, setIsPremium] = useState(false);
+
+  // Lista de emails que tienen plan Premium (persistido en localStorage)
+  const getPremiumEmails = (): Record<string, boolean> => {
+    try {
+      return JSON.parse(localStorage.getItem('ecoswap_premium') || '{}');
+    } catch {
+      return {};
+    }
+  };
+
+  const activatePremium = (email: string) => {
+    const premiumEmails = getPremiumEmails();
+    premiumEmails[email] = true;
+    localStorage.setItem('ecoswap_premium', JSON.stringify(premiumEmails));
+    setIsPremium(true);
+  };
 
   // Usuarios registrados se guardan en localStorage
   const getUsers = (): Record<string, { name: string; password: string }> => {
     try {
-      return JSON.parse(localStorage.getItem('ecoswap_users') || '{}');
+      return JSON.parse(localStorage.getItem("ecoswap_users") || "{}");
     } catch {
       return {};
     }
@@ -78,7 +97,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const registerUser = (name: string, email: string, password: string) => {
     const users = getUsers();
     users[email] = { name, password };
-    localStorage.setItem('ecoswap_users', JSON.stringify(users));
+    localStorage.setItem("ecoswap_users", JSON.stringify(users));
   };
 
   const login = (email: string, password: string): boolean => {
@@ -88,6 +107,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoggedIn(true);
       setUserName(user.name);
       setCurrentUserEmail(email);
+      const premiumEmails = getPremiumEmails();
+      setIsPremium(!!premiumEmails[email]);
       return true;
     }
     return false;
@@ -97,14 +118,15 @@ function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoggedIn(false);
     setUserName('');
     setCurrentUserEmail('');
+    setIsPremium(false);
   };
 
   const addUserProduct = (p: UserProduct) => {
-    setUserProducts(prev => [p, ...prev]);
+    setUserProducts((prev) => [p, ...prev]);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, userName, setUserName, userProducts, addUserProduct, registerUser, currentUserEmail }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, logout, userName, setUserName, userProducts, addUserProduct, registerUser, currentUserEmail, isPremium, activatePremium }}>
       {children}
     </AuthContext.Provider>
   );
@@ -114,10 +136,10 @@ function FloatingGearButton() {
   const navigate = useNavigate();
   return (
     <motion.button
-      onClick={() => navigate('/settings')}
+      onClick={() => navigate("/settings")}
       whileHover={{ scale: 1.1, rotate: 30 }}
       whileTap={{ scale: 0.92 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      transition={{ type: "spring", stiffness: 400, damping: 20 }}
       className="fixed bottom-6 right-5 z-50 w-12 h-12 bg-[#0F3460] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#16A085] transition-colors"
       aria-label="Ajustes"
     >

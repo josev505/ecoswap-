@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../App';
 import logo from '../../imports/logo.png';
@@ -8,8 +8,10 @@ import { registrarMetrica } from '../../supabase';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { login, activatePremium } = useAuth();
   const { t } = useSettings();
+  const fromUpgrade = !!(location.state as any)?.fromUpgrade;
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -25,7 +27,12 @@ export default function Login() {
   const ok = login(formData.email, formData.password);
   if (ok) {
     await registrarMetrica(formData.email, 'login', true);
-    navigate('/feed');
+    if (fromUpgrade) {
+      activatePremium(formData.email);
+      navigate('/feed', { state: { justUpgraded: true } });
+    } else {
+      navigate('/feed');
+    }
   } else {
     await registrarMetrica(formData.email, 'login', false);
     setErrorMsg(t('Credenciales incorrectas. Verifica tu email y contraseña.'));
@@ -175,7 +182,7 @@ export default function Login() {
             {/* Botón de registro - Ley de Similitud (estilo secundario consistente) */}
             <button
               type="button"
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/register', { state: { fromUpgrade } })}
               className="w-full bg-white border-2 border-[#0F3460] text-[#0F3460] py-4 rounded-xl font-semibold hover:bg-[#0F3460] hover:text-white transition-all"
             >
               {t('Crear Cuenta Nueva')}
